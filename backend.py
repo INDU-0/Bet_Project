@@ -22,7 +22,7 @@ class UserCredentials(BaseModel):
     name:str=Field(min_length=3,max_length=20)
     password:str=Field(min_length=8, max_length=40)
 
-@app.post("/signup")
+@app.post("/auth/signup")
 def signup(data:UserCredentials):
     
     users=load_users()
@@ -44,12 +44,10 @@ def signup(data:UserCredentials):
     save_users(users)
 
     return{
-        "message":"Sign Up Successful \nWelcome To Degenerate's Cave",
-        "name":data.name,
         "token":token
     }
 
-@app.post("/signin")
+@app.post("/auth/signin")
 def signin(data:UserCredentials):
     
     users=load_users()
@@ -58,12 +56,11 @@ def signin(data:UserCredentials):
             if password_hasher.verify(data.password,user["password"]): #Verify password and return token
                 token=user["token"]
                 return{
-                    "message": "Sign In Successful",
                     "token": token
                 }
             else:
                 raise HTTPException(
-                    status_code=404,
+                    status_code=401,
                     detail="Incorrect Password"
                 )
     
@@ -72,14 +69,6 @@ def signin(data:UserCredentials):
         detail="Username Not Found"
     )
 
-@app.post("/autologin")         #Auto Login
+@app.post("/auth/login")         #Auto Login
 def autologin(authorization:str=Header()):
-    pass
-
-@app.post("/blackjack")
-@app.post("/slots")
-@app.post("/coinflip")
-@app.post("/maines")
-@app.post("/highlow")
-def fn():
-    pass
+    return
