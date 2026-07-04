@@ -53,3 +53,16 @@ def update_user(token,balance):
 def coinflip_call(balance,bet,heads_tails):
     state,bal, land=games.coinflip(balance,bet,heads_tails)
     return state,bal,land
+
+def high_low_call(bet,ch,comp1):
+    bet_won,state,comp2=games.high_low(bet,ch,comp1)
+    return bet_won,state,comp2
+
+def slots_call(bet):
+    roll,bet_amt=games.slots(bet)
+    return roll,bet
+
+def show_top():
+    resp=requests.post(url+"/allusers")
+    state,data=check_error(resp,resp.json())
+    return state,data

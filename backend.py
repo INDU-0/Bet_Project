@@ -43,7 +43,7 @@ def signup(data:UserCredentials):
         "name":data.name,                                       #password_hasher.verify(data.password, stored_hash)
         "password":hashed_password,
         "token":token,
-        "money":1000
+        "money":1000,
     }
     users.append(user_data)                                     #store data in users.json in server
     save_users(users)
@@ -102,3 +102,8 @@ def update_userdata(data:UpdateUser):
         status_code=404,
         detail=[{"msg":"Couldn't modify user"}]
     )
+
+@app.get("/allusers")
+def all_users():
+    user=load_users()
+    return user
