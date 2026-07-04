@@ -1,7 +1,13 @@
 import random
 
-def coinflip():
-    pass
+def coinflip(balance,bet,user_ht:int): #balance is bet minus balance
+    head_tail=random.randint(1,3) #1 is head, 2 is tails
+    balance=balance-bet
+    if head_tail==user_ht:
+        balance=int(balance+(bet*(1.5)))
+        return True,balance,head_tail
+    else:
+        return False, balance, head_tail
 
 def blackjack():
     deck = []
