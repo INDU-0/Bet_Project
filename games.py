@@ -34,8 +34,20 @@ def high_low(bet,ch,comp1):
 
     return bet,state,comp2
 
-def slots():
-    pass
+def slots(bet):
+    symbols=["🍒","🍒","🍒","🍒","🍒","🍒"
+            ,"🍋","🍋","🍋","🍋","🍋","🍋",
+            "🍊","🍊","🍊","🍊","🍊","🍊",
+            "🔔","🔔","🔔","🔔","🔔","🔔",
+            "💎","💎","💎","💎","💎","💎"]
+    roll = random.choices(symbols, k=3)
+    
+    if roll[0] == roll[1] == roll[2]:
+        return roll,(bet*2)
+    elif len(set(roll)) == 2:
+        return roll,int(bet*1.5)
+    else:
+        return roll,(bet*0)
 
 def mines():
     pass

@@ -81,6 +81,8 @@ def games(choice,data):   #didnt add the update data part yet and then the show 
         coinflip_data(data)
     elif choice==4:
         higher_lower(data)
+    elif choice==5:
+        slots(data)
 
 def coinflip_data(data):
     print(F"Current balance: {data["money"]}")
@@ -171,10 +173,21 @@ def show_leaderboard():
         for user in users:
             print(f"{c}.{user["name"]} -> {user["money"]}")
             c+=1
-
+            ch=(input("Enter anything to go back to homepage"))
+            if ch:
+                homepage()
     else:
         print(users)
         homepage()
+
+def slots(data):
+    bet_amt=enter_bet_check(data)
+    roll,bet_won=client.slots_call(bet_amt)
+    print("|".join(roll))
+    balance=data["money"]-bet_amt+bet_won
+    print(f"New balance: {balance}")
+    client.update_user(data["token"],balance)
+    homepage()
 
 def start():
     if Path("token.txt").exists():   #check if exists or not if not send to sign up or in 
