@@ -1,4 +1,5 @@
 import client
+import random
 from pathlib import Path
 
 def auto_login():
@@ -78,20 +79,12 @@ def games(choice,data):   #didnt add the update data part yet and then the show 
         pass
     elif choice==3:
         coinflip_data(data)
+    elif choice==4:
+        higher_lower(data)
 
 def coinflip_data(data):
     print(F"Current balance: {data["money"]}")
-    print("Enter bet amount")
-    bet_amt=0
-    while True:
-        try:
-            bet_amt=int(input())
-            if data["money"]<bet_amt:
-                print("Bet amt cannot exceed current balance")
-            else:
-                break
-        except ValueError:
-            print("enter a valid integer")
+    bet_amt=enter_bet_check(data)
     print("1.Heads\n2.Tails")
     while True:
         try:
@@ -133,3 +126,50 @@ def start():
 
 if __name__=="__main__":
     start()
+
+def higher_lower(data):
+    print(F"Current balance: {data["money"]}")
+    bet_amt=enter_bet_check(data)
+    current_bal=data["money"]-bet_amt
+    while True:
+        print(f"current amount: {current_bal}")
+        comp1=random.randint(1,16)
+        print(comp1,"\n")
+        print("1.Higher\n2.Lower\n3.Exit")
+        try:
+            choice=int(input())
+            if choice==3:
+                state,err=client.update_user(data["token"],current_bal+bet_amt)
+                if state:
+                    homepage()
+                else:
+                    print(err)
+                    homepage()
+            if choice in [1,2]:
+                bet_won,won_lose,comp2=client.high_low_call(bet_amt,choice,comp1)
+                print(f"The second number is {comp2}")
+                if won_lose:
+                    print("You Won!!")
+                    current_bal+=bet_won
+                    client.update_user(data["token"],current_bal)
+                else:
+                    print("You Lost X_X")
+                    current_bal-=bet_won
+                    client.update_user(data["token"],current_bal)
+
+            else:
+                print("enter a valid input")
+        except ValueError:
+            print("Enter a valid integer")
+
+def enter_bet_check(data):
+    print("Enter bet amount")
+    while True:
+        try:
+            bet_amt=int(input())
+            if data["money"]<bet_amt:
+                print("Bet amt cannot exceed current balance")
+            else:
+                return bet_amt
+        except ValueError:
+            print("enter a valid integer")
