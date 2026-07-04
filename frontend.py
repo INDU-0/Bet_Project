@@ -115,18 +115,6 @@ def coinflip_data(data):
         except ValueError:
             print("enter a valid integer")
 
-def show_leaderboard():
-    pass
-
-def start():
-    if Path("token.txt").exists():   #check if exists or not if not send to sign up or in 
-        auto_login()
-    else:
-        choose_sign_inup()          #go to sign up or in 
-
-if __name__=="__main__":
-    start()
-
 def higher_lower(data):
     print(F"Current balance: {data["money"]}")
     bet_amt=enter_bet_check(data)
@@ -152,11 +140,12 @@ def higher_lower(data):
                     print("You Won!!")
                     current_bal+=bet_won
                     client.update_user(data["token"],current_bal)
+                    homepage()
                 else:
                     print("You Lost X_X")
                     current_bal-=bet_won
                     client.update_user(data["token"],current_bal)
-
+                    homepage()
             else:
                 print("enter a valid input")
         except ValueError:
@@ -173,3 +162,25 @@ def enter_bet_check(data):
                 return bet_amt
         except ValueError:
             print("enter a valid integer")
+
+def show_leaderboard():
+    state,users=client.show_top()
+    if state:
+        users.sort(key=lambda users: users["money"], reverse=True)
+        c=1
+        for user in users:
+            print(f"{c}.{user["name"]} -> {user["money"]}")
+            c+=1
+
+    else:
+        print(users)
+        homepage()
+
+def start():
+    if Path("token.txt").exists():   #check if exists or not if not send to sign up or in 
+        auto_login()
+    else:
+        choose_sign_inup()          #go to sign up or in 
+
+if __name__=="__main__":
+    start()
