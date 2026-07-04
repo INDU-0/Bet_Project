@@ -22,6 +22,10 @@ class UserCredentials(BaseModel):
     name:str=Field(min_length=3,max_length=20)
     password:str=Field(min_length=8, max_length=40)
 
+class UpdateUser(BaseModel):
+    token:str
+    balance:int
+
 @app.post("/auth/signup")
 def signup(data:UserCredentials):
     
@@ -30,22 +34,23 @@ def signup(data:UserCredentials):
         if user["name"]==data.name:
             raise HTTPException(
                 status_code=409,
-                detail="Username Already Taken."
+                detail=[{"msg":"Username Already Taken."}]
             )
     
     token=secrets.token_hex(32)
     hashed_password = password_hasher.hash(data.password)
-    user_data={                                                 #Store name, hashed password, token
+    user_data={                                                 #Store name, hashed password, token, money
         "name":data.name,                                       #password_hasher.verify(data.password, stored_hash)
         "password":hashed_password,
-        "token":token
+        "token":token,
+        "money":1000
     }
     users.append(user_data)                                     #store data in users.json in server
     save_users(users)
-
-    return{
+    token={
         "token":token
     }
+    return token
 
 @app.post("/auth/signin")
 def signin(data:UserCredentials):
@@ -61,14 +66,39 @@ def signin(data:UserCredentials):
             else:
                 raise HTTPException(
                     status_code=401,
-                    detail="Incorrect Password"
+                    detail=[{"msg":"Incorrect Password"}]
                 )
     
     raise HTTPException(
         status_code= 404,
-        detail="Username Not Found"
+        detail=[{"msg":"Username Not Found"}]
     )
 
 @app.post("/auth/login")         #Auto Login
 def autologin(authorization:str=Header()):
     return
+
+@app.post("/userdata")
+def userdata(authorization:str=Header()):
+    users=load_users()
+    for user in users:
+        if user["token"]==authorization:
+            return user
+    raise HTTPException(
+        status_code=404,
+        detail=[{"msg":"User not found"}]
+    )
+
+@app.post("/update/userdata")
+def update_userdata(data:UpdateUser):
+    users=load_users()
+    for user in users:
+        if data.token==user["token"]:
+            user["money"]=data.balance
+            save_users(users)
+            return
+    
+    raise HTTPException(
+        status_code=404,
+        detail=[{"msg":"Couldn't modify user"}]
+    )
