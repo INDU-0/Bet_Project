@@ -20,13 +20,11 @@ def sign_inup(name,password,endpoint):
     state,data=check_error(resp,resp.json()["token"])
     return state,data
     
-
 def get_userdata():
     headers=return_header()
     resp=requests.post(url+"/userdata",headers=headers)
     state,data=check_error(resp,resp.json())
     return state,data
-
     
 def return_header():
     with open ("token.txt","r") as f:

@@ -63,7 +63,7 @@ def homepage():
         print(f"Welcome To Degenerate's Cave")
         print(f"Balance: {balance}")
         print("============================\n") 
-        print("1.Leaderboard\n2.coinflip\n3.higher lower\n4.slots\n5.mines\n6.exit")
+        print("1.Leaderboard\n2.coinflip\n3.higher lower\n4.slots\n5.mines\n6.exit\n")
         while True:
             try:
                 choice=int(input())
@@ -126,7 +126,6 @@ def coinflip_data(data):
                 print(f"Balance: {balance}")
                 
                 time.sleep(2)
-                homepage()
                 
                 state,err=client.update_user(data["token"],balance)
                 if state:
@@ -141,14 +140,18 @@ def coinflip_data(data):
             print("enter a valid integer")
 
 def higher_lower(data):
+    clear()
     print(F"Current balance: {data["money"]}")
     bet_amt=enter_bet_check(data)
     current_bal=data["money"]-bet_amt
     while True:
-        print(f"current amount: {current_bal}")
+        clear()
+        print(f"Current Balance: {current_bal}\n")
         comp1=random.randint(1,16)
-        print(comp1,"\n")
-        print("1.Higher\n2.Lower\n3.Exit")
+        print(f"The First Number is...\n")
+        time.sleep(1)
+        print(comp1)
+        print("\n1.Higher\n2.Lower\n3.Exit\n")
         try:
             choice=int(input())
             if choice==3:
@@ -160,18 +163,22 @@ def higher_lower(data):
                     homepage()
             if choice in [1,2]:
                 bet_won,won_lose,comp2=client.high_low_call(bet_amt,choice,comp1)
-                print("Generating second number...")
+                print("Generating Second Number...")
                 time.sleep(1.5)
-                print(f"The second number is {comp2}")
+                print(f"The Second Number is: {comp2}")
                 if won_lose:
                     print("You Won!!")
                     current_bal+=bet_won
                     client.update_user(data["token"],current_bal)
+                    print("Redirecting To Homepage...")
+                    time.sleep(3)
                     homepage()
                 else:
                     print("You Lost X_X")
                     current_bal-=bet_won
                     client.update_user(data["token"],current_bal)
+                    print("Redirecting To Homepage...")
+                    time.sleep(3)
                     homepage()
             else:
                 print("enter a valid input")
@@ -179,7 +186,7 @@ def higher_lower(data):
             print("Enter a valid integer")
 
 def enter_bet_check(data):
-    print("Enter bet amount")
+    print("Enter Bet Amount:")
     while True:
         try:
             bet_amt=int(input())
@@ -200,9 +207,8 @@ def show_leaderboard():
         for user in users:
             print(f"{c}.{user["name"]} -> {user["money"]}")
             c+=1
-            ch=(input("Enter anything to go back to homepage\n"))
-            if ch:
-                homepage()
+            ch=input("Enter anything to go back to homepage\n")
+            homepage()
     else:
         print(users)
         homepage()
@@ -239,6 +245,7 @@ def slots(data):
     homepage()
 
 def mines(data):
+    clear()
     print(F"Current balance: {data["money"]}")
     print("Enter Number of mines (4-24)")
     while True:
@@ -250,7 +257,7 @@ def mines(data):
                 break
         except ValueError:
             print("enter a valid integer")
-
+    clear()
     bet_amt=enter_bet_check(data)
     current_bal=data["money"]-bet_amt
     safe_tiles=25-mines_number
@@ -263,6 +270,7 @@ def mines(data):
 
     opened=[]
     while True:
+        clear()
         for tile in range(1,26):
             if tile in opened:
                 print(" ✓",end=" ")
@@ -310,6 +318,7 @@ def mines(data):
                 client.delete_data(data["token"])
                 print("You Lost X_X")
                 print(f"New balance: {current_bal}")
+                time.sleep(4)
                 if state:
                     homepage()
                 else:
@@ -327,6 +336,7 @@ def mines(data):
                     client.delete_data(data["token"])
                     print("🎉 All safe tiles found! Auto cashed out!")
                     print(f"New balance: {final_balance}")
+                    time.sleep(5)
                     if state:
                         homepage()
                     else:

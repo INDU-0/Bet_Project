@@ -16,6 +16,7 @@ def high_low(bet,ch,comp1):
 
     if comp1==comp2:
         bet=bet*10
+        state=True
     if ch==1 and comp1<comp2:
         bet=bet*(comp2-comp1)
         state=True
@@ -32,17 +33,17 @@ def high_low(bet,ch,comp1):
     return bet,state,comp2
 
 def slots(bet):
-    symbols=["🍒","🍒","🍒","🍒","🍒","🍒"
-            ,"🍋","🍋","🍋","🍋","🍋","🍋",
-            "🍊","🍊","🍊","🍊","🍊","🍊",
-            "🔔","🔔","🔔","🔔","🔔","🔔",
-            "💎","💎","💎","💎","💎","💎"]
+    symbols=["🍒","🍒","🍒"
+            ,"🍋","🍋","🍋",
+            "🍊","🍊","🍊",
+            "🔔","🔔","🔔",
+            "💎","💎","💎"]
     roll = random.choices(symbols, k=3)
     
     if roll[0] == roll[1] == roll[2]:
-        return roll,(bet*2)
+        return roll,(bet*3)
     elif len(set(roll)) == 2:
-        return roll,int(bet*1.5)
+        return roll,int(bet*2)
     else:
         return roll,(bet*0)
 
