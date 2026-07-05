@@ -60,9 +60,46 @@ def high_low_call(bet,ch,comp1):
 
 def slots_call(bet):
     roll,bet_amt=games.slots(bet)
-    return roll,bet
+    return roll,bet_amt
 
 def show_top():
-    resp=requests.post(url+"/allusers")
+    resp=requests.get(url+"/allusers")
     state,data=check_error(resp,resp.json())
     return state,data
+
+def start_mines_call(token,mines_number):
+    body={
+        "token":token,
+        "mines_number":mines_number
+    }
+    resp=requests.post(url+"/mines/start",json=body)
+    state,err=check_error(resp,resp.status_code)
+    return state,err
+
+def get_mine_data(token):
+    headers={
+            "authorization":token
+        }
+    resp=requests.post(url+"/mines/mines_pos",headers=headers)
+    state,data=check_error(resp,resp.json())
+    return state,data
+
+def change_minedata(token,user_pos):
+    body={
+        "token":token,
+        "position":user_pos
+    }
+    resp=requests.post(url+"/mines/update_data",json=body)
+    state,err=check_error(resp,resp.status_code)
+    return state,err
+
+def delete_data(token):
+    headers={
+        "authorization":token
+    }
+    resp=requests.post(url+"/mines/delete",headers=headers)
+    state,err=check_error(resp,resp.status_code)
+    return state,err
+
+def get_multiplier(mines_number,tiles_opened):
+    return games.mines_multiplier(mines_number,tiles_opened)

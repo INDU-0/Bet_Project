@@ -4,6 +4,7 @@ from pwdlib import PasswordHash
 import uvicorn
 import secrets
 import json
+import games
 
 app= FastAPI()
 password_hasher=PasswordHash.recommended()
@@ -18,6 +19,18 @@ def save_users(users):
     with open("users.json", "w") as f:
         json.dump(users,f,indent=4)
 
+def load_mines():                                                #Load or Save mines.json
+    try:
+        with open("mines.json", "r") as f:
+            mines_list=json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        mines_list=[]
+    return mines_list
+
+def save_mines(mines_list):
+    with open("mines.json", "w") as f:
+        json.dump(mines_list,f,indent=4)
+
 class UserCredentials(BaseModel):
     name:str=Field(min_length=3,max_length=20)
     password:str=Field(min_length=8, max_length=40)
@@ -25,6 +38,14 @@ class UserCredentials(BaseModel):
 class UpdateUser(BaseModel):
     token:str
     balance:int
+
+class Mine_update(BaseModel):
+    token:str
+    position:int
+
+class StartMines(BaseModel):
+    token:str
+    mines_number:int=Field(ge=4,le=24)
 
 @app.post("/auth/signup")
 def signup(data:UserCredentials):
@@ -102,6 +123,62 @@ def update_userdata(data:UpdateUser):
         status_code=404,
         detail=[{"msg":"Couldn't modify user"}]
     )
+
+@app.post("/mines/start")
+def start_mines(data:StartMines):
+    mines_list=load_mines()
+    mine_positions=games.mines(data.mines_number)                 #generate mine positions server-side
+
+    for m in mines_list:
+        if m["token"]==data.token:
+            m["mine_pos"]=mine_positions
+            m["opened"]=[]
+            save_mines(mines_list)
+            return True
+
+    mines_list.append({
+        "token":data.token,
+        "mine_pos":mine_positions,
+        "opened":[]
+    })
+    save_mines(mines_list)
+    return True
+
+@app.post("/mines/mines_pos")
+def mines_pos(authorization:str=Header()):
+    mines_list=load_mines()
+    for user in mines_list:
+        if user["token"]==authorization:
+            return user['mine_pos']
+    raise HTTPException(
+        status_code=404,
+        detail=[{"msg":"No active mines game found"}]
+    )
+
+@app.post("/mines/update_data")
+def update_data(data:Mine_update):
+    mines_list=load_mines()
+    for user in mines_list:
+        if user["token"]==data.token:
+            user["opened"].append(data.position)
+            save_mines(mines_list)
+            return True
+    raise HTTPException(
+        status_code=404,
+        detail=[{"msg":"User Couldnt be modified"}]
+    )
+
+@app.post("/mines/delete")
+def delete_mines(authorization:str=Header()):
+    mines_list=load_mines()
+    for m in mines_list:
+        if m["token"]==authorization:
+            m["mine_pos"]=[]
+            m["opened"]=[]
+            save_mines(mines_list)
+            return True
+    raise HTTPException(status_code=404,detail=[{"msg":"User not found"}])
+    
 
 @app.get("/allusers")
 def all_users():

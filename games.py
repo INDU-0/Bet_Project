@@ -8,9 +8,6 @@ def coinflip(balance,bet,user_ht:int): #balance is bet minus balance
         return True,balance,head_tail
     else:
         return False, balance, head_tail
-
-def blackjack():
-    pass
     
 def high_low(bet,ch,comp1):
     low = max(1, comp1 - 3)
@@ -49,18 +46,21 @@ def slots(bet):
     else:
         return roll,(bet*0)
 
-def mines():
-    pass
+def mines(mines_number):
+    positions=random.sample(range(1,26),mines_number)
+    return positions
 
-# def deck_maker():
-#     deck = []
-#     suits = ["♠", "♥", "♦", "♣"]
-#     ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
-    
-#     for suit in suits:
-#         for rank in ranks:
-#             deck.append(f"{rank}{suit}")
-#     return deck
+def mines_multiplier(mines_number,tiles_opened,house_edge=0.97):
+    total_tiles=25
+    fair_multiplier=1.0
+    for i in range(tiles_opened):
+        fair_multiplier*=(total_tiles-i)/(total_tiles-mines_number-i)
+    multiplier=1+(fair_multiplier-1)*house_edge
+    return round(multiplier,2)
 
-def card_value(card):
-    pass
+
+'''
+{token:
+mine_pos:
+opened:
+}'''

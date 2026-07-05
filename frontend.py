@@ -1,5 +1,6 @@
 import client
 import random
+import json
 from pathlib import Path
 
 def auto_login():
@@ -56,15 +57,15 @@ def homepage():
         balance=data["money"]                                                       #show homepage and take input
         print(f"Welcome To Degenerate's Cave")
         print(f"Balance: {balance}")
-        print("1.Leaderboard\n2.blackjack\n3.coinflip\n4.higher lower\n5.slots\n6.mines\n7.exit")
+        print("1.Leaderboard\n2.coinflip\n3.higher lower\n4.slots\n5.mines\n6.exit")
         while True:
             try:
                 choice=int(input())
-                if choice==7:
+                if choice==6:
                     exit()
                 elif choice==1:
                     show_leaderboard()
-                elif choice in [2,3,4,5,6]:
+                elif choice in [2,3,4,5]:
                     games(choice,data)
                 else:
                     print("Enter a valid choice")
@@ -76,13 +77,13 @@ def homepage():
 
 def games(choice,data):   #didnt add the update data part yet and then the show the output of teh thingy yet 
     if choice==2:
-        pass
-    elif choice==3:
         coinflip_data(data)
-    elif choice==4:
+    elif choice==3:
         higher_lower(data)
-    elif choice==5:
+    elif choice==4:
         slots(data)
+    elif choice==5:
+        mines(data)
 
 def coinflip_data(data):
     print(F"Current balance: {data["money"]}")
@@ -189,11 +190,112 @@ def slots(data):
     client.update_user(data["token"],balance)
     homepage()
 
-def start():
+def blackjack(data):
+    pass
+
+def mines(data):
+    print(F"Current balance: {data["money"]}")
+    print("Enter Number of mines (4-24)")
+    while True:
+        try:
+            mines_number=int(input())
+            if mines_number>24 or mines_number<4:
+                print("enter a valid number between 4 and 24")
+            else:
+                break
+        except ValueError:
+            print("enter a valid integer")
+
+    bet_amt=enter_bet_check(data)
+    current_bal=data["money"]-bet_amt
+    safe_tiles=25-mines_number
+
+    state,err=client.start_mines_call(data["token"],mines_number)
+    if not state:
+        print(err)
+        homepage()
+        return
+
+    opened=[]
+    while True:
+        for tile in range(1,26):
+            if tile in opened:
+                print(" ✓",end=" ")
+            else:
+                print(f"{tile:2}",end=" ")
+            if tile%5==0:
+                print()
+
+        multiplier=client.get_multiplier(mines_number,len(opened))
+        cashout_value=int(bet_amt*multiplier)
+        print(f"Tiles opened: {len(opened)}/{safe_tiles} | Multiplier: {multiplier}x | Cash out value: {cashout_value}")
+        print("Enter Tile Number (1-25) to open, or 0 to Cash Out")
+        try:
+            player_pos=int(input())
+
+            if player_pos==0:
+                final_balance=current_bal+cashout_value
+                state,err=client.update_user(data["token"],final_balance)
+                client.delete_data(data["token"])
+                print(f"Cashed out!\nNew balance: {final_balance}")
+                if state:
+                    homepage()
+                else:
+                    print(err)
+                    homepage()
+                return
+
+            if player_pos<1 or player_pos>25:
+                print("enter a valid tile number between 1 and 25")
+                continue
+
+            if player_pos in opened:
+                print("Tile already opened, choose another")
+                continue
+
+            state,mine_position=client.get_mine_data(data["token"])
+            if not state:
+                print(mine_position)
+                homepage()
+                return
+
+            if player_pos in mine_position:
+                print("💥 You hit a mine!")
+                state,err=client.update_user(data["token"],current_bal)
+                client.delete_data(data["token"])
+                print("You Lost X_X")
+                print(f"New balance: {current_bal}")
+                if state:
+                    homepage()
+                else:
+                    print(err)
+                    homepage()
+                return
+            else:
+                opened.append(player_pos)
+                client.change_minedata(data["token"],player_pos)
+
+                if len(opened)==safe_tiles:
+                    multiplier=client.get_multiplier(mines_number,len(opened))
+                    final_balance=current_bal+int(bet_amt*multiplier)
+                    state,err=client.update_user(data["token"],final_balance)
+                    client.delete_data(data["token"])
+                    print("🎉 All safe tiles found! Auto cashed out!")
+                    print(f"New balance: {final_balance}")
+                    if state:
+                        homepage()
+                    else:
+                        print(err)
+                        homepage()
+                    return
+        except ValueError:
+            print("enter a valid int")
+
+def main():
     if Path("token.txt").exists():   #check if exists or not if not send to sign up or in 
         auto_login()
     else:
         choose_sign_inup()          #go to sign up or in 
 
 if __name__=="__main__":
-    start()
+    main()
