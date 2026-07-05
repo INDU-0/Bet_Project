@@ -1,6 +1,7 @@
 import client
 import random
-import json
+import os
+import time
 from pathlib import Path
 
 def auto_login():
@@ -9,6 +10,8 @@ def auto_login():
         homepage()
     else:
         choose_sign_inup()
+def clear():
+    os.system("cls")
 
 def choose_sign_inup():
     while True:
@@ -35,8 +38,8 @@ def store_token(token):
         f.write(token)
 
 def user_input():      
-    name=input("Enter name")
-    password=input("Enter password")
+    name=input("Enter Name: ")
+    password=input("Enter Password: ")
     return name,password 
 
 def sign_inup_menu():      
@@ -52,11 +55,14 @@ def sign_inup_menu():
             print("enter a valid integer")
 
 def homepage():
+    clear()
     state,data=client.get_userdata()                                                #take data             
     if state:
-        balance=data["money"]                                                       #show homepage and take input
+        balance=data["money"]     
+        print("============================")                                                  #show homepage and take input
         print(f"Welcome To Degenerate's Cave")
         print(f"Balance: {balance}")
+        print("============================\n") 
         print("1.Leaderboard\n2.coinflip\n3.higher lower\n4.slots\n5.mines\n6.exit")
         while True:
             try:
@@ -94,17 +100,33 @@ def coinflip_data(data):
             hd_tl=int(input())
             if hd_tl in [1,2]:
                 state,balance,land=client.coinflip_call(data["money"],bet_amt,hd_tl)
-                if land==1:
-                    print("The coin landed on Heads")
-                if land==2:
-                    print("The coin laned on Tails")
+                clear()
+                print("🪙 Flipping...")
+                time.sleep(0.7)
+                
+                clear()
+                print("🪙 Flipping...")
+                print("...")
+                time.sleep(0.7)
+                
+                clear()
+                
+                if land == 1:
+                    print("🪙 HEADS")
+                else:
+                    print("🪙 TAILS")
+                
+                time.sleep(0.5)
                 
                 if state:
-                    print("You Won!!")
-                    print(f"New balance: {balance}")
+                    print("\n🎉 You Won!")
                 else:
-                    print("You Lost X_X")
-                    print(f"New balance: {balance}")
+                    print("\n💀 You Lost!")
+                
+                print(f"Balance: {balance}")
+                
+                time.sleep(2)
+                homepage()
                 
                 state,err=client.update_user(data["token"],balance)
                 if state:
@@ -138,6 +160,8 @@ def higher_lower(data):
                     homepage()
             if choice in [1,2]:
                 bet_won,won_lose,comp2=client.high_low_call(bet_amt,choice,comp1)
+                print("Generating second number...")
+                time.sleep(1.5)
                 print(f"The second number is {comp2}")
                 if won_lose:
                     print("You Won!!")
@@ -168,13 +192,15 @@ def enter_bet_check(data):
 
 def show_leaderboard():
     state,users=client.show_top()
+    clear()
+    print("🏆 Leaderboard\n")
     if state:
         users.sort(key=lambda users: users["money"], reverse=True)
         c=1
         for user in users:
             print(f"{c}.{user["name"]} -> {user["money"]}")
             c+=1
-            ch=(input("Enter anything to go back to homepage"))
+            ch=(input("Enter anything to go back to homepage\n"))
             if ch:
                 homepage()
     else:
@@ -184,14 +210,33 @@ def show_leaderboard():
 def slots(data):
     bet_amt=enter_bet_check(data)
     roll,bet_won=client.slots_call(bet_amt)
-    print("|".join(roll))
+    clear()
+    print("🎰 Spinning...")
+    time.sleep(.5)
+
+    clear()
+    print(f"{roll[0]} | ? | ?")
+    time.sleep(.5)
+
+    clear()
+    print(f"{roll[0]} | {roll[1]} | ?")
+    time.sleep(.5)
+
+    clear()
+    print(" | ".join(roll))
+    time.sleep(.5)
+
+    if bet_won:
+        print("\n🎉 WIN!")
+    else:
+        print("\n❌ Better luck next time!")
+
+    time.sleep(2)
+
     balance=data["money"]-bet_amt+bet_won
     print(f"New balance: {balance}")
     client.update_user(data["token"],balance)
     homepage()
-
-def blackjack(data):
-    pass
 
 def mines(data):
     print(F"Current balance: {data["money"]}")
